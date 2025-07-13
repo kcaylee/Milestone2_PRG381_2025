@@ -11,10 +11,7 @@ import java.sql.*;
 import javax.servlet.http.HttpSession;
 
 
-/**
- *
- * @author carst
- */
+
 @WebServlet(urlPatterns = {"/Login"})
 public class Login extends HttpServlet {
 
@@ -87,13 +84,12 @@ public class Login extends HttpServlet {
             ResultSet rs = stmt.executeQuery();
 
             if (rs.next()) {
-                // ✅ Login successful — store message in session
+              
                 HttpSession session = request.getSession();
                 session.setAttribute("studentName", rs.getString("name"));
                 session.setAttribute("loginStatus", "Login successful!");
-                response.sendRedirect("login.jsp"); // or change to "dashboard.jsp" if you want
+                response.sendRedirect("login.jsp");
             } else {
-                // ❌ Invalid login — send error flag & code
                 response.sendRedirect("login.jsp?error=true&code=invalid");
             }
 
@@ -104,7 +100,6 @@ public class Login extends HttpServlet {
         } catch (Exception e) {
             e.printStackTrace();
 
-            // ❌ Database error — send error details back to login.jsp
             String errorMessage = e.getMessage().replaceAll("'", "");
             response.sendRedirect("login.jsp?error=true&code=db&msg=" + java.net.URLEncoder.encode(errorMessage, "UTF-8"));
         }

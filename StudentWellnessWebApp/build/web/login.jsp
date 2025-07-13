@@ -22,7 +22,7 @@
     <br>
 
     <%
-        // ✅ Show success message from session (e.g., Login successful!)
+     
         HttpSession sessionLogin = request.getSession(false);
         String status = (sessionLogin != null) ? (String) sessionLogin.getAttribute("loginStatus") : null;
         if (status != null) {
@@ -32,7 +32,7 @@
             sessionLogin.removeAttribute("loginStatus"); // clear after displaying
         }
 
-        // ❌ Show error messages if login failed or DB error occurred
+       
         String error = request.getParameter("error");
         if ("true".equals(error)) {
             String code = request.getParameter("code");
