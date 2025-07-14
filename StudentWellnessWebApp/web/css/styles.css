@@ -1,0 +1,115 @@
+/*
+Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/CascadeStyleSheet.css to edit this template
+*/
+/* 
+    Created on : Jul 14, 2025, 12:47:02 PM
+    Author     : arman
+*/
+
+/* Global Styles */
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f4f4f4;
+}
+
+.container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: #fff;
+    border-radius: 5px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.header h1, .header h2 {
+    color: #333;
+    text-align: center;
+}
+
+.content {
+    padding: 20px;
+}
+
+/* Form Styles */
+.loginForm, .registerForm, .logoutForm {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.formGroup {
+    margin-bottom: 15px;
+}
+
+.formGroup label {
+    font-weight: bold;
+}
+
+.formInput {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+
+.btn {
+    padding: 10px 20px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.btn:hover {
+    background-color: #0056b3;
+}
+
+/* Navigation Styles */
+.navList {
+    list-style-type: none;
+    padding: 0;
+}
+
+.nav-link {
+    text-decoration: none;
+    color: #007bff;
+    margin-right: 15px;
+}
+
+.nav-link:hover {
+    text-decoration: underline;
+}
+
+/* Message Styles */
+.statusMessage {
+    margin-top: 15px;
+    padding: 10px;
+    border-radius: 4px;
+}
+
+.statusMessage.success {
+    background-color: #d4edda;
+    color: #155724;
+}
+
+.statusMessage.error {
+    background-color: #f8d7da;
+    color: #721c24;
+}
+
+textarea[readonly] {
+    border: none;
+    background: transparent;
+    resize: none;
+    width: 100%;
+}
+
+.welcomeMessage {
+    margin-bottom: 20px;
+    text-align: center;
+}
