@@ -6,6 +6,7 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
+import java.sql.*;
 import controller.AppointmentController;
 import model.Appointment;
 import controller.CounselorController;
@@ -26,7 +27,7 @@ public class AppointmentPanelTemp extends JPanel {
         appointmentController = new AppointmentController();
         initializeComponents();
         setupLayout();
-        ArrayList<Appointment> appointments = appointmentController.getAll("Appointments");
+        ArrayList<Appointment> appointments = appointmentController.getAll();
         loadAppointments(appointments);
     }
     
@@ -120,7 +121,7 @@ public class AppointmentPanelTemp extends JPanel {
     }
     
     public void refresh(){
-        ArrayList<Appointment> appointments = appointmentController.getAll("Appointments");
+        ArrayList<Appointment> appointments = appointmentController.getAll();
         
         loadAppointments(appointments);
     }
@@ -152,7 +153,13 @@ public class AppointmentPanelTemp extends JPanel {
         }
     }
     
-    private void addAppointment() {
+    private String[] createOverlay(String name, String counselor, String date, String time, String status) {
+        final String[] result = {null, null, null, null, null};        
+
+        if (status != null){
+            time = time.substring(0,5);
+        }
+        
         // Create dialog
         JDialog dialog = new JDialog((Frame) SwingUtilities.getWindowAncestor(this), "Add New Appointment", true);
         dialog.setLayout(new BorderLayout());
@@ -170,6 +177,7 @@ public class AppointmentPanelTemp extends JPanel {
         formPanel.add(new JLabel("Student Name:"), gbc);
         gbc.gridx = 1;
         JTextField studentNameField = new JTextField(20);
+        studentNameField.setText(name);
         formPanel.add(studentNameField, gbc);
         
         // Counselor Name field
@@ -179,6 +187,7 @@ public class AppointmentPanelTemp extends JPanel {
         CounselorController cc = new CounselorController();
         ArrayList<String> counselors = cc.getCounselorNames();
         JComboBox<String> counselorCombo = new JComboBox<>(counselors.toArray(new String[0]));
+        counselorCombo.setSelectedItem(counselor);
         formPanel.add(counselorCombo, gbc);
         
         // Date field
@@ -186,6 +195,7 @@ public class AppointmentPanelTemp extends JPanel {
         formPanel.add(new JLabel("Date (YYYY-MM-DD):"), gbc);
         gbc.gridx = 1;
         JTextField dateField = new JTextField(20);
+        dateField.setText(date);
         formPanel.add(dateField, gbc);
         
         // Time field
@@ -193,7 +203,20 @@ public class AppointmentPanelTemp extends JPanel {
         formPanel.add(new JLabel("Time (HH:MM):"), gbc);
         gbc.gridx = 1;
         JTextField timeField = new JTextField(20);
+        timeField.setText(time);
         formPanel.add(timeField, gbc);
+        
+        
+        gbc.gridx = 0; gbc.gridy = 4;
+        
+        JComboBox<String> statusCombo = new JComboBox<>(new String[]{"Scheduled", "Completed", "Cancelled", "No Show"});
+        statusCombo.setSelectedItem(status);
+        
+        if (status != null){ 
+            formPanel.add(new JLabel("Status:"), gbc);
+            gbc.gridx = 1;
+            formPanel.add(statusCombo, gbc);
+        }
         
         // Button panel
         JPanel buttonPanel = new JPanel(new FlowLayout());
@@ -206,6 +229,13 @@ public class AppointmentPanelTemp extends JPanel {
             String counselorName = (String) counselorCombo.getSelectedItem();
             String dateStr = dateField.getText().trim();
             String timeStr = timeField.getText().trim();
+            String statusStr;
+            
+            if (status != null){
+                statusStr = (String) statusCombo.getSelectedItem();
+            } else {
+                statusStr = "Scheduled";
+            }
             
             // Validate inputs
             if (studentName.isEmpty() || counselorName.isEmpty() || dateStr.isEmpty() || timeStr.isEmpty()) {
@@ -233,36 +263,17 @@ public class AppointmentPanelTemp extends JPanel {
                     JOptionPane.ERROR_MESSAGE);
                 return;
             }
+
+            //return appointment
+
+            result[0] = studentName;
+            result[1] = counselorName;
+            result[2] = dateStr;
+            result[3] = timeStr;
+            result[4] = statusStr;
             
-            try {
-                // Parse date and time
-                java.sql.Date appointmentDate = java.sql.Date.valueOf(dateStr);
-                java.sql.Time appointmentTime = java.sql.Time.valueOf(timeStr + ":00");
-                
-                // Create appointment using controller
-                boolean success = appointmentController.addAppointment(
-                    studentName, counselorName, appointmentDate, appointmentTime, "Scheduled"
-                );
-                
-                if (success) {
-                    JOptionPane.showMessageDialog(dialog, 
-                        "Appointment added successfully!", 
-                        "Success", 
-                        JOptionPane.INFORMATION_MESSAGE);
-                    dialog.dispose();
-                    refresh(); // Refresh the table
-                } else {
-                    JOptionPane.showMessageDialog(dialog, 
-                        "Failed to add appointment", 
-                        "Error", 
-                        JOptionPane.ERROR_MESSAGE);
-                }
-            } catch (Exception ex) {
-                JOptionPane.showMessageDialog(dialog, 
-                    "Error: " + ex.getMessage(), 
-                    "Error", 
-                    JOptionPane.ERROR_MESSAGE);
-            }
+            dialog.dispose();
+            
         });
         
         // Cancel button action
@@ -277,6 +288,36 @@ public class AppointmentPanelTemp extends JPanel {
         
         // Show dialog
         dialog.setVisible(true);
+        
+        // When we get here, the dialog has been closed
+        return result;
+    }
+    
+    private void addAppointment(){
+        String[] result = createOverlay("", "", "", "", null);
+        
+        // Check if user cancelled or data is invalid
+        if (result[0] == null || result[0].isEmpty()) {
+            return; // User cancelled or no data entered
+        }
+        
+        Date date = Date.valueOf(result[2]);
+        Time time = Time.valueOf(result[3] + ":00");
+
+        boolean success = appointmentController.addAppointment(result[0], result[1], date, time, result[4]);
+
+        if (success){
+            JOptionPane.showMessageDialog(null,
+                    "Appointment added successfully!",
+                    "Success",
+                    JOptionPane.INFORMATION_MESSAGE);
+            refresh();
+        } else {
+            JOptionPane.showMessageDialog(null,
+                    "Appointment failed to be added!",
+                    "Error",
+                    JOptionPane.ERROR_MESSAGE);
+        }
     }
     
     private void editAppointment() {
@@ -286,13 +327,33 @@ public class AppointmentPanelTemp extends JPanel {
                 "Please select an appointment to edit", 
                 "No Selection", 
                 JOptionPane.WARNING_MESSAGE);
-            return;
+        } else {
+            Appointment selectedItem = appointmentController.getAll().get(selectedRow);
+            
+            String[] result = createOverlay(selectedItem.getStudentName(), 
+                    selectedItem.getCounselorName(), 
+                    selectedItem.getAppointmentDate().toString(), 
+                    selectedItem.getAppointmentTime().toString(), 
+                    selectedItem.getStatus());
+            
+            Date date = Date.valueOf(result[2]);
+            Time time = Time.valueOf(result[3] + ":00");
+
+            boolean success = appointmentController.updateAppointment(result[0], result[1], date, time, result[4], selectedItem.getId());
+
+            if (success){
+                JOptionPane.showMessageDialog(null,
+                        "Appointment edited successfully!",
+                        "Success",
+                        JOptionPane.INFORMATION_MESSAGE);
+                refresh();
+            } else {
+                JOptionPane.showMessageDialog(null,
+                        "Appointment failed to be edited!",
+                        "Error",
+                        JOptionPane.ERROR_MESSAGE);
+            }
         }
-        
-        JOptionPane.showMessageDialog(this, 
-            "Edit appointment functionality to be implemented", 
-            "Feature Not Implemented", 
-            JOptionPane.INFORMATION_MESSAGE);
     }
     
     private void deleteAppointment() {
@@ -323,9 +384,6 @@ public class AppointmentPanelTemp extends JPanel {
                 "Successfully Deleted " + studentName +"'s Appointment", 
                 "Success", 
                 JOptionPane.INFORMATION_MESSAGE);
-            // TODO: Implement actual deletion
-            // appointmentController.deleteByID(appointmentId);
-            // loadAppointments(); // Refresh table
         }
     }
 }

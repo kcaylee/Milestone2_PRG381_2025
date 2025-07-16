@@ -44,7 +44,7 @@ public class AppointmentController {
         }
     }
 
-    public ArrayList<Appointment> getAll(String Table){
+    public ArrayList<Appointment> getAll(){
         
         _connection = DBConnection.getConnection();
         appointments.clear();
@@ -57,7 +57,7 @@ public class AppointmentController {
             }
             
             Statement stmt = _connection.createStatement();
-            ResultSet rs = stmt.executeQuery("SELECT * FROM "+Table);
+            ResultSet rs = stmt.executeQuery("SELECT * FROM Appointments");
             
             appointments = findInDB(rs);
 
@@ -169,8 +169,42 @@ public class AppointmentController {
         }
     }
 
-    public void updateAppointment(){
+    public boolean updateAppointment(String studentName, String counselorName, Date appointmentDate, Time appointmentTime, String status, int ID){
+        try {
+            _connection = DBConnection.getConnection();
             
+            if (_connection == null) {
+                System.err.println("Database connection failed, cannot add appointment");
+                return false;
+            }
+            
+            String query = "UPDATE Appointments SET student_name = ?, counselor_name = ?, appointment_date = ?, appointment_time = ?, status = ? WHERE ID = ?";
+            
+            PreparedStatement stmt = _connection.prepareStatement(query);
+            stmt.setString(1, studentName);
+            stmt.setString(2, counselorName);
+            stmt.setDate(3, appointmentDate);
+            stmt.setTime(4, appointmentTime);
+            stmt.setString(5, status);
+            stmt.setInt(6, ID);
+            
+            int rowsAffected = stmt.executeUpdate();
+            
+            if (rowsAffected > 0) {
+                return true;
+            } else {
+                return false;
+            }
+            
+        } catch (SQLException e) {
+            System.err.println("SQL Error in addAppointment(): " + e.getMessage());
+            e.printStackTrace();
+            return false;
+        } catch (Exception e) {
+            System.err.println("Unexpected error in addAppointment(): " + e.getMessage());
+            e.printStackTrace();
+            return false;
+        }
     }
     
 }
