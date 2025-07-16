@@ -3,6 +3,7 @@ package utils;
 public class InputValidator {
 
     // Check if any string field is empty
+    //Already such a function?
     public static boolean isEmpty(String... fields) {
         for (String field : fields) {
             if (field == null || field.trim().isEmpty()) {
