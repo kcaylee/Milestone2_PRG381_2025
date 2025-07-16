@@ -34,4 +34,34 @@ public class InputValidator {
         int rating = Integer.parseInt(ratingStr);
         return isValidRating(rating);
     }
+
+    
+    
+    
+    //CLAUDE
+    
+    
+    // Check if string is a valid date in YYYY-MM-DD format
+    public static boolean isValidDate(String dateStr) {
+        if (dateStr == null || dateStr.trim().isEmpty()) return false;
+        
+        try {
+            java.sql.Date.valueOf(dateStr);
+            return true;
+        } catch (IllegalArgumentException e) {
+            return false;
+        }
+    }
+
+    // Check if string is a valid time in HH:MM format
+    public static boolean isValidTime(String timeStr) {
+        if (timeStr == null || timeStr.trim().isEmpty()) return false;
+        
+        try {
+            java.sql.Time.valueOf(timeStr + ":00");
+            return true;
+        } catch (IllegalArgumentException e) {
+            return false;
+        }
+    }
 }
