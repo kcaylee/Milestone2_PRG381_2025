@@ -34,12 +34,6 @@ public class InputValidator {
         int rating = Integer.parseInt(ratingStr);
         return isValidRating(rating);
     }
-
-    
-    
-    
-    //CLAUDE
-    
     
     // Check if string is a valid date in YYYY-MM-DD format
     public static boolean isValidDate(String dateStr) {
