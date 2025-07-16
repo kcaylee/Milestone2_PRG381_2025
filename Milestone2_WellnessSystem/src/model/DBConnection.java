@@ -10,35 +10,20 @@ public class DBConnection {
     private static final String USER = "app";
     private static final String PASSWORD = "app";
 
-    private static Connection connection = null;
-
-    public static Connection getConnection() {
-        if (connection == null) {
-            try {
-                // Load Derby driver (optional in modern JDKs)
-                Class.forName("org.apache.derby.jdbc.ClientDriver");
-                connection = DriverManager.getConnection(DB_URL, USER, PASSWORD);
-                System.out.println("✅ Connected to JavaDB (WellnessDB)");
-            } catch (ClassNotFoundException e) {
-                System.err.println("❌ JavaDB Driver not found.");
-                e.printStackTrace();
-            } catch (SQLException e) {
-                System.err.println("❌ Connection failed.");
-                e.printStackTrace();
-            }
-        }
-        return connection;
-    }
-
-    public static void closeConnection() {
+    static {
         try {
-            if (connection != null) {
-                connection.close();
-                System.out.println("🔒 Database connection closed.");
-            }
-        } catch (SQLException e) {
-            System.err.println("⚠️ Failed to close connection.");
+            Class.forName("org.apache.derby.jdbc.ClientDriver");
+            System.out.println("✅ JavaDB Driver loaded");
+        } catch (ClassNotFoundException e) {
+            System.err.println("❌ JavaDB Driver not found");
             e.printStackTrace();
         }
+    }
+
+    public static Connection getConnection() throws SQLException {
+        // Always return a new connection
+        Connection conn = DriverManager.getConnection(DB_URL, USER, PASSWORD);
+        System.out.println("✅ Connected to JavaDB (WellnessDB)");
+        return conn;
     }
 }
