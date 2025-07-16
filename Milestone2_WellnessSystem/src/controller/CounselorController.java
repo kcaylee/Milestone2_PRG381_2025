@@ -16,6 +16,8 @@ import model.DBConnection;
  */
 public class CounselorController {
     
+    //I JUST ADDED THIS METHOD TO GET ALL THE COUNSELOR NAMES IN MY COMBO BOX, WE CAN CHANGE THIS LATER
+    
     public ArrayList<String> getCounselorNames(){
         
         Connection conn = DBConnection.getConnection();

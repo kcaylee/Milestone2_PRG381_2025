@@ -21,7 +21,7 @@ public class Dashboard extends JFrame {
         tabbedPane = new JTabbedPane();
 
         // Add panels to tabs
-        tabbedPane.addTab("Appointments", new AppointmentPanelTemp());
+        tabbedPane.addTab("Appointments", new AppointmentPanel());
         tabbedPane.addTab("Counselors", new CounselorPanel());
         tabbedPane.addTab("Feedback", new FeedbackPanel());
 
