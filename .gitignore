@@ -1,3 +1,11 @@
 /Milestone2_WellnessSystem/nbproject/private/
 /Milestone2_WellnessSystem/build/
 /Milestone2_WellnessSystem/dist/
+
+# Claude files
+CLAUDE.md
+.claude/
+claude-history.json
+claude-session.json
+.claude_history
+claude_history.json
