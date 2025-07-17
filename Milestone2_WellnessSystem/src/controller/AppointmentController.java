@@ -25,6 +25,35 @@ public class AppointmentController {
         return appointments;
     }
 
+    // Check for duplicate appointment
+public boolean isDuplicateAppointment(String counselorName, Date date, Time newTime) {
+    try {
+        _connection = DBConnection.getConnection();
+        if (_connection == null) return false;
+
+        String query = "SELECT appointment_time FROM Appointments WHERE counselor_name = ? AND appointment_date = ?";
+        PreparedStatement stmt = _connection.prepareStatement(query);
+        stmt.setString(1, counselorName);
+        stmt.setDate(2, date);
+
+        ResultSet rs = stmt.executeQuery();
+        while (rs.next()) {
+            Time existingTime = rs.getTime("appointment_time");
+
+            long diffInMillis = Math.abs(existingTime.getTime() - newTime.getTime());
+            long diffInMinutes = diffInMillis / (60 * 1000);
+
+            if (diffInMinutes < 60) {
+                return true; // Appointment exists within 1 hour
+            }
+        }
+    } catch (Exception e) {
+        e.printStackTrace();
+    }
+    return false;
+}
+
+
     // Get all appointments
     public ArrayList<Appointment> getAll() {
         try {
@@ -65,6 +94,11 @@ public class AppointmentController {
         try {
             _connection = DBConnection.getConnection();
             if (_connection == null) return false;
+
+            if (isDuplicateAppointment(counselorName, date, time)) {
+                System.err.println("Duplicate appointment found.");
+                return false;
+            }
 
             String query = "INSERT INTO Appointments (student_name, counselor_name, appointment_date, appointment_time, status) VALUES (?, ?, ?, ?, ?)";
             PreparedStatement stmt = _connection.prepareStatement(query);

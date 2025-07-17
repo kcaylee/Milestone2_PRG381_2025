@@ -222,19 +222,26 @@ public class AppointmentPanel extends JPanel {
     }
 
     private void addAppointment() {
-        String[] result = createOverlay("", "", "", "", null);
-        if (result[0] == null || result[0].isEmpty()) return;
-        Date date = Date.valueOf(result[2]);
-        Time time = Time.valueOf(result[3] + ":00");
+    String[] result = createOverlay("", "", "", "", null);
+    if (result[0] == null || result[0].isEmpty()) return;
 
-        boolean success = appointmentController.addAppointment(result[0], result[1], date, time, result[4]);
-        if (success) {
-            DialogHelper.showInfo("Appointment added successfully!");
-            refresh();
-        } else {
-            DialogHelper.showError("Appointment failed to be added!");
-        }
+    Date date = Date.valueOf(result[2]);
+    Time time = Time.valueOf(result[3] + ":00");
+
+    if (appointmentController.isDuplicateAppointment(result[1], date, time)) {
+        DialogHelper.showError("This counselor already has an appointment at this time.");
+        return;
     }
+
+    boolean success = appointmentController.addAppointment(result[0], result[1], date, time, result[4]);
+    if (success) {
+        DialogHelper.showInfo("Appointment added successfully!");
+        refresh();
+    } else {
+        DialogHelper.showError("Failed to add appointment.");
+    }
+}
+
 
     private void editAppointment() {
         int selectedRow = appointmentTable.getSelectedRow();
