@@ -3,6 +3,11 @@ package model;
 import java.sql.Date;
 import java.sql.Time;
 
+/**
+ * Model class representing an appointment.
+ * Used for transferring appointment data between the GUI, controller, and database.
+ * Supports encapsulation and constructor overloading.
+ */
 public class Appointment {
     private int id;
     private String studentName;
@@ -11,7 +16,10 @@ public class Appointment {
     private Time appointmentTime;
     private String status;
 
-    // Constructor without ID (for inserting new records)
+    /**
+     * Constructor for creating a new appointment (no ID yet).
+     * Used when inserting new records into the database.
+     */
     public Appointment(String studentName, String counselorName, Date appointmentDate, Time appointmentTime, String status) {
         this.studentName = studentName;
         this.counselorName = counselorName;
@@ -20,13 +28,17 @@ public class Appointment {
         this.status = status;
     }
 
-    // Constructor with ID (for reading existing records)
+    /**
+     * Constructor for loading existing appointments (includes ID).
+     * Used when reading records from the database.
+     */
     public Appointment(int id, String studentName, String counselorName, Date appointmentDate, Time appointmentTime, String status) {
         this(studentName, counselorName, appointmentDate, appointmentTime, status);
         this.id = id;
     }
 
     // Getters and Setters
+
     public int getId() { return id; }
 
     public void setId(int id) { this.id = id; }

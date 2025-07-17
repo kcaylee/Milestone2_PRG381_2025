@@ -10,12 +10,19 @@ import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.util.ArrayList;
 
+/**
+ * FeedbackPanel provides the GUI for managing student feedback.
+ * It allows viewing, adding, and deleting feedback entries.
+ */
 public class FeedbackPanel extends JPanel {
 
     private JTable table;
     private DefaultTableModel tableModel;
     private final FeedbackController controller = new FeedbackController();
 
+    /**
+     * Constructs the panel and initializes components.
+     */
     public FeedbackPanel() {
         setLayout(new BorderLayout());
 
@@ -25,14 +32,18 @@ public class FeedbackPanel extends JPanel {
 
         setupTable();
         setupButtons();
-
         loadFeedbacks();
     }
 
+    /**
+     * Sets up the table to display feedback records.
+     */
     private void setupTable() {
         String[] columns = {"ID", "Student Name", "Rating", "Comments"};
         tableModel = new DefaultTableModel(columns, 0) {
-            public boolean isCellEditable(int row, int col) { return false; }
+            public boolean isCellEditable(int row, int col) {
+                return false; // Make all cells read-only
+            }
         };
 
         table = new JTable(tableModel);
@@ -44,6 +55,9 @@ public class FeedbackPanel extends JPanel {
         add(scrollPane, BorderLayout.CENTER);
     }
 
+    /**
+     * Creates and wires up action buttons for Add, Delete, and Refresh.
+     */
     private void setupButtons() {
         JPanel buttonPanel = new JPanel(new FlowLayout());
 
@@ -62,8 +76,11 @@ public class FeedbackPanel extends JPanel {
         add(buttonPanel, BorderLayout.SOUTH);
     }
 
+    /**
+     * Loads all feedback records from the controller and populates the table.
+     */
     private void loadFeedbacks() {
-        tableModel.setRowCount(0);
+        tableModel.setRowCount(0); // Clear existing rows
         ArrayList<Feedback> feedbackList = controller.getAllFeedback();
 
         for (Feedback f : feedbackList) {
@@ -76,6 +93,9 @@ public class FeedbackPanel extends JPanel {
         }
     }
 
+    /**
+     * Opens a dialog to allow the user to enter and submit new feedback.
+     */
     private void addFeedback() {
         JTextField studentField = new JTextField();
         JTextField ratingField = new JTextField();
@@ -97,6 +117,7 @@ public class FeedbackPanel extends JPanel {
             String ratingStr = ratingField.getText().trim();
             String comments = commentField.getText().trim();
 
+            // Validate input
             if (InputValidator.isEmpty(student, ratingStr)) {
                 DialogHelper.showError("Student name and rating are required.");
                 return;
@@ -119,6 +140,9 @@ public class FeedbackPanel extends JPanel {
         }
     }
 
+    /**
+     * Deletes the selected feedback entry after confirmation.
+     */
     private void deleteFeedback() {
         int selected = table.getSelectedRow();
         if (selected == -1) {

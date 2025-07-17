@@ -1,154 +1,189 @@
 package controller;
 
-import java.sql.*;
-import java.util.ArrayList;
 import model.Appointment;
 import model.DBConnection;
 
+import java.sql.*;
+import java.util.ArrayList;
+
+/**
+ * Controller for managing Appointment operations (CRUD) with JavaDB.
+ */
 public class AppointmentController {
 
-    private Connection _connection;
-    private ArrayList<Appointment> appointments = new ArrayList<>();
-
-    // Helper: Convert ResultSet to List of Appointments
-    private ArrayList<Appointment> extractAppointments(ResultSet rs) throws SQLException {
-        appointments.clear();
-        while (rs.next()) {
-            int id = rs.getInt("id");
-            String studentName = rs.getString("student_name");
-            String counselorName = rs.getString("counselor_name");
-            Date date = rs.getDate("appointment_date");
-            Time time = rs.getTime("appointment_time");
-            String status = rs.getString("status");
-            appointments.add(new Appointment(id, studentName, counselorName, date, time, status));
-        }
-        return appointments;
-    }
-
-    // Check for duplicate appointment
-public boolean isDuplicateAppointment(String counselorName, Date date, Time newTime) {
-    try {
-        _connection = DBConnection.getConnection();
-        if (_connection == null) return false;
-
-        String query = "SELECT appointment_time FROM Appointments WHERE counselor_name = ? AND appointment_date = ?";
-        PreparedStatement stmt = _connection.prepareStatement(query);
-        stmt.setString(1, counselorName);
-        stmt.setDate(2, date);
-
-        ResultSet rs = stmt.executeQuery();
-        while (rs.next()) {
-            Time existingTime = rs.getTime("appointment_time");
-
-            long diffInMillis = Math.abs(existingTime.getTime() - newTime.getTime());
-            long diffInMinutes = diffInMillis / (60 * 1000);
-
-            if (diffInMinutes < 60) {
-                return true; // Appointment exists within 1 hour
-            }
-        }
-    } catch (Exception e) {
-        e.printStackTrace();
-    }
-    return false;
-}
-
-
-    // Get all appointments
+    /**
+     * Retrieves all appointments from the database.
+     */
     public ArrayList<Appointment> getAll() {
-        try {
-            _connection = DBConnection.getConnection();
-            if (_connection == null) return null;
+        ArrayList<Appointment> list = new ArrayList<>();
+        String query = "SELECT * FROM Appointments";
 
-            String query = "SELECT * FROM Appointments";
-            Statement stmt = _connection.createStatement();
-            ResultSet rs = stmt.executeQuery(query);
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(query);
+             ResultSet rs = ps.executeQuery()) {
 
-            return extractAppointments(rs);
-        } catch (Exception e) {
-            e.printStackTrace();
-            return null;
+            while (rs.next()) {
+                Appointment a = new Appointment(
+                    rs.getInt("id"),
+                    rs.getString("student_name"),
+                    rs.getString("counselor_name"),
+                    rs.getDate("appointment_date"),
+                    rs.getTime("appointment_time"),
+                    rs.getString("status")
+                );
+                list.add(a);
+            }
+        } catch (SQLException e) {
+            System.err.println("Error retrieving appointments: " + e.getMessage());
         }
+
+        return list;
     }
 
-    // Get appointment by ID
+    /**
+     * Gets appointments by specific ID.
+     */
     public ArrayList<Appointment> getByID(int id) {
-        try {
-            _connection = DBConnection.getConnection();
-            if (_connection == null) return null;
+        ArrayList<Appointment> list = new ArrayList<>();
+        String query = "SELECT * FROM Appointments WHERE id = ?";
 
-            String query = "SELECT * FROM Appointments WHERE id = ?";
-            PreparedStatement stmt = _connection.prepareStatement(query);
-            stmt.setInt(1, id);
-            ResultSet rs = stmt.executeQuery();
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(query)) {
 
-            return extractAppointments(rs);
-        } catch (Exception e) {
-            e.printStackTrace();
-            return null;
+            ps.setInt(1, id);
+            ResultSet rs = ps.executeQuery();
+
+            while (rs.next()) {
+                Appointment a = new Appointment(
+                    rs.getInt("id"),
+                    rs.getString("student_name"),
+                    rs.getString("counselor_name"),
+                    rs.getDate("appointment_date"),
+                    rs.getTime("appointment_time"),
+                    rs.getString("status")
+                );
+                list.add(a);
+            }
+        } catch (SQLException e) {
+            System.err.println("Error retrieving appointment by ID: " + e.getMessage());
+        }
+
+        return list;
+    }
+
+    /**
+     * Adds a new appointment to the database.
+     */
+    public boolean addAppointment(String studentName, String counselorName, Date date, Time time, String status) {
+        String query = "INSERT INTO Appointments (student_name, counselor_name, appointment_date, appointment_time, status) VALUES (?, ?, ?, ?, ?)";
+
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(query)) {
+
+            ps.setString(1, studentName);
+            ps.setString(2, counselorName);
+            ps.setDate(3, date);
+            ps.setTime(4, time);
+            ps.setString(5, status);
+
+            return ps.executeUpdate() > 0;
+
+        } catch (SQLException e) {
+            System.err.println("Error adding appointment: " + e.getMessage());
+            return false;
         }
     }
 
-    // Add new appointment
-    public boolean addAppointment(String studentName, String counselorName, Date date, Time time, String status) {
-        try {
-            _connection = DBConnection.getConnection();
-            if (_connection == null) return false;
+    /**
+     * Updates an existing appointment record.
+     */
+    public boolean updateAppointment(String studentName, String counselorName, Date date, Time time, String status, int id) {
+        String query = "UPDATE Appointments SET student_name = ?, counselor_name = ?, appointment_date = ?, appointment_time = ?, status = ? WHERE id = ?";
 
-            if (isDuplicateAppointment(counselorName, date, time)) {
-                System.err.println("Duplicate appointment found.");
-                return false;
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(query)) {
+
+            ps.setString(1, studentName);
+            ps.setString(2, counselorName);
+            ps.setDate(3, date);
+            ps.setTime(4, time);
+            ps.setString(5, status);
+            ps.setInt(6, id);
+
+            return ps.executeUpdate() > 0;
+
+        } catch (SQLException e) {
+            System.err.println("Error updating appointment: " + e.getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Deletes an appointment by its ID.
+     */
+    public boolean deleteByID(int id) {
+        String query = "DELETE FROM Appointments WHERE id = ?";
+
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(query)) {
+
+            ps.setInt(1, id);
+            return ps.executeUpdate() > 0;
+
+        } catch (SQLException e) {
+            System.err.println("Error deleting appointment: " + e.getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Checks if a counselor already has an appointment at the given date and time.
+     */
+    public boolean isDuplicateAppointment(String counselorName, Date date, Time time) {
+        String query = "SELECT COUNT(*) FROM Appointments WHERE counselor_name = ? AND appointment_date = ? AND appointment_time = ?";
+
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(query)) {
+
+            ps.setString(1, counselorName);
+            ps.setDate(2, date);
+            ps.setTime(3, time);
+
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                return rs.getInt(1) > 0;
             }
 
-            String query = "INSERT INTO Appointments (student_name, counselor_name, appointment_date, appointment_time, status) VALUES (?, ?, ?, ?, ?)";
-            PreparedStatement stmt = _connection.prepareStatement(query);
-            stmt.setString(1, studentName);
-            stmt.setString(2, counselorName);
-            stmt.setDate(3, date);
-            stmt.setTime(4, time);
-            stmt.setString(5, status);
-
-            return stmt.executeUpdate() > 0;
-        } catch (Exception e) {
-            e.printStackTrace();
-            return false;
+        } catch (SQLException e) {
+            System.err.println("Error checking duplicate appointment: " + e.getMessage());
         }
+
+        return false;
     }
 
-    // Update appointment
-    public boolean updateAppointment(String studentName, String counselorName, Date date, Time time, String status, int id) {
-        try {
-            _connection = DBConnection.getConnection();
-            if (_connection == null) return false;
+    /**
+     * Checks if a student already has an appointment at the same date and time.
+     * Prevents double-booking with different counselors.
+     */
+    public boolean studentHasAppointmentAtTime(String studentName, Date date, Time time) {
+        String query = "SELECT COUNT(*) FROM Appointments WHERE student_name = ? AND appointment_date = ? AND appointment_time = ?";
 
-            String query = "UPDATE Appointments SET student_name = ?, counselor_name = ?, appointment_date = ?, appointment_time = ?, status = ? WHERE id = ?";
-            PreparedStatement stmt = _connection.prepareStatement(query);
-            stmt.setString(1, studentName);
-            stmt.setString(2, counselorName);
-            stmt.setDate(3, date);
-            stmt.setTime(4, time);
-            stmt.setString(5, status);
-            stmt.setInt(6, id);
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(query)) {
 
-            return stmt.executeUpdate() > 0;
-        } catch (Exception e) {
-            e.printStackTrace();
-            return false;
+            ps.setString(1, studentName);
+            ps.setDate(2, date);
+            ps.setTime(3, time);
+
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                return rs.getInt(1) > 0;
+            }
+
+        } catch (SQLException e) {
+            System.err.println("Error checking student appointment conflict: " + e.getMessage());
         }
-    }
 
-    // Delete appointment by ID
-    public void deleteByID(int id) {
-        try {
-            _connection = DBConnection.getConnection();
-            if (_connection == null) return;
-
-            String query = "DELETE FROM Appointments WHERE id = ?";
-            PreparedStatement stmt = _connection.prepareStatement(query);
-            stmt.setInt(1, id);
-            stmt.executeUpdate();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        return false;
     }
 }

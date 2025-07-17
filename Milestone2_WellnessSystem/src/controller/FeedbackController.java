@@ -6,11 +6,19 @@ import model.Feedback;
 import java.sql.*;
 import java.util.ArrayList;
 
+/**
+ * Controller class for managing feedback data.
+ * Handles all database operations related to student feedback.
+ * Implements CRUD logic as part of the Feedback Management section in Milestone 2.
+ */
 public class FeedbackController {
 
     private Connection connection;
 
-    // Get all feedback
+    /**
+     * Retrieves all feedback records from the database.
+     * Used to populate feedback history in the GUI.
+     */
     public ArrayList<Feedback> getAllFeedback() {
         ArrayList<Feedback> list = new ArrayList<>();
         try {
@@ -25,7 +33,8 @@ public class FeedbackController {
                 int rating = rs.getInt("rating");
                 String comments = rs.getString("comments");
 
-                list.add(new Feedback(id, studentName, null, rating, comments));  // counselorName is null
+                // counselorName is not stored in DB for feedback, so pass null
+                list.add(new Feedback(id, studentName, null, rating, comments));
             }
 
         } catch (SQLException e) {
@@ -34,7 +43,10 @@ public class FeedbackController {
         return list;
     }
 
-    // Add feedback
+    /**
+     * Adds a new feedback entry to the database.
+     * Only student name, rating, and comments are stored (counselorName is unused here).
+     */
     public boolean addFeedback(String studentName, String counselorName, int rating, String comments) {
         try {
             connection = DBConnection.getConnection();
@@ -50,7 +62,10 @@ public class FeedbackController {
         }
     }
 
-    // Delete feedback
+    /**
+     * Deletes a feedback record based on its ID.
+     * Triggers a confirmation dialog in the GUI before execution.
+     */
     public boolean deleteFeedback(int id) {
         try {
             connection = DBConnection.getConnection();

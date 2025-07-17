@@ -10,6 +10,9 @@ import model.Appointment;
 import controller.CounselorController;
 import utils.*;
 
+/**
+ * Panel to manage appointments: Add, Edit, Delete, Find, and Refresh
+ */
 public class AppointmentPanel extends JPanel {
 
     private JTable appointmentTable;
@@ -221,27 +224,36 @@ public class AppointmentPanel extends JPanel {
         return result;
     }
 
+    /**
+     * Adds a new appointment after validating time conflicts for counselor and student.
+     */
     private void addAppointment() {
-    String[] result = createOverlay("", "", "", "", null);
-    if (result[0] == null || result[0].isEmpty()) return;
+        String[] result = createOverlay("", "", "", "", null);
+        if (result[0] == null || result[0].isEmpty()) return;
 
-    Date date = Date.valueOf(result[2]);
-    Time time = Time.valueOf(result[3] + ":00");
+        Date date = Date.valueOf(result[2]);
+        Time time = Time.valueOf(result[3] + ":00");
 
-    if (appointmentController.isDuplicateAppointment(result[1], date, time)) {
-        DialogHelper.showError("This counselor already has an appointment at this time.");
-        return;
+        // Check if the counselor already has an appointment
+        if (appointmentController.isDuplicateAppointment(result[1], date, time)) {
+            DialogHelper.showError("This counselor already has an appointment at this time.");
+            return;
+        }
+
+        // Check if the student already has an appointment at the same time (even with a different counselor)
+        if (appointmentController.studentHasAppointmentAtTime(result[0], date, time)) {
+            DialogHelper.showError("This student already has an appointment at this time.");
+            return;
+        }
+
+        boolean success = appointmentController.addAppointment(result[0], result[1], date, time, result[4]);
+        if (success) {
+            DialogHelper.showInfo("Appointment added successfully.");
+            refresh();
+        } else {
+            DialogHelper.showError("Failed to add appointment.");
+        }
     }
-
-    boolean success = appointmentController.addAppointment(result[0], result[1], date, time, result[4]);
-    if (success) {
-        DialogHelper.showInfo("Appointment added successfully!");
-        refresh();
-    } else {
-        DialogHelper.showError("Failed to add appointment.");
-    }
-}
-
 
     private void editAppointment() {
         int selectedRow = appointmentTable.getSelectedRow();
@@ -264,10 +276,10 @@ public class AppointmentPanel extends JPanel {
             boolean success = appointmentController.updateAppointment(result[0], result[1], date, time, result[4], selectedItem.getId());
 
             if (success) {
-                DialogHelper.showInfo("Appointment edited successfully!");
+                DialogHelper.showInfo("Appointment edited successfully.");
                 refresh();
             } else {
-                DialogHelper.showError("Appointment failed to be edited!");
+                DialogHelper.showError("Appointment failed to be edited.");
             }
         }
     }
@@ -286,7 +298,7 @@ public class AppointmentPanel extends JPanel {
         if (confirm) {
             appointmentController.deleteByID(ID);
             refresh();
-            DialogHelper.showInfo("Successfully Deleted " + studentName + "'s Appointment");
+            DialogHelper.showInfo("Successfully deleted " + studentName + "'s appointment.");
         }
     }
 }

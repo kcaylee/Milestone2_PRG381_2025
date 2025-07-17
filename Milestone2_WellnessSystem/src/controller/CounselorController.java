@@ -6,11 +6,19 @@ import model.DBConnection;
 import java.sql.*;
 import java.util.ArrayList;
 
+/**
+ * Controller class for managing counselors in the system.
+ * Handles all database operations for CRUD functionality using JavaDB.
+ * Supports the Counselor Management section of the Milestone 2 desktop application.
+ */
 public class CounselorController {
 
     private Connection connection;
 
-    // Get all counselors
+    /**
+     * Retrieves all counselors from the database.
+     * Used to populate counselor lists in the GUI.
+     */
     public ArrayList<Counselor> getAllCounselors() {
         ArrayList<Counselor> list = new ArrayList<>();
         try {
@@ -33,28 +41,34 @@ public class CounselorController {
         return list;
     }
 
-    // Add a new counselor
-   public boolean addCounselor(String name, String specialization, String availability) {
-    try {
-        connection = DBConnection.getConnection();
+    /**
+     * Adds a new counselor to the database.
+     * Prevents duplicates using a helper method.
+     */
+    public boolean addCounselor(String name, String specialization, String availability) {
+        try {
+            connection = DBConnection.getConnection();
 
-        if (counselorExists(name)) {
-            return false; // Duplicate counselor
+            if (counselorExists(name)) {
+                return false; // Prevent duplicate entries
+            }
+
+            String query = "INSERT INTO Counselors (name, specialization, availability) VALUES (?, ?, ?)";
+            PreparedStatement stmt = connection.prepareStatement(query);
+            stmt.setString(1, name);
+            stmt.setString(2, specialization);
+            stmt.setString(3, availability);
+            return stmt.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
         }
-
-        String query = "INSERT INTO Counselors (name, specialization, availability) VALUES (?, ?, ?)";
-        PreparedStatement stmt = connection.prepareStatement(query);
-        stmt.setString(1, name);
-        stmt.setString(2, specialization);
-        stmt.setString(3, availability);
-        return stmt.executeUpdate() > 0;
-    } catch (SQLException e) {
-        e.printStackTrace();
-        return false;
     }
-}
 
-    // Update an existing counselor
+    /**
+     * Updates an existing counselor's information by ID.
+     * Used in the update form from the GUI.
+     */
     public boolean updateCounselor(int id, String name, String specialization, String availability) {
         try {
             connection = DBConnection.getConnection();
@@ -71,7 +85,10 @@ public class CounselorController {
         }
     }
 
-    // Delete a counselor
+    /**
+     * Deletes a counselor from the database by ID.
+     * Triggers a confirmation dialog in the GUI.
+     */
     public boolean deleteCounselor(int id) {
         try {
             connection = DBConnection.getConnection();
@@ -85,7 +102,10 @@ public class CounselorController {
         }
     }
 
-    // Get list of counselor names (used in dropdowns)
+    /**
+     * Retrieves a list of counselor names only.
+     * Useful for populating dropdowns in appointment booking.
+     */
     public ArrayList<String> getCounselorNames() {
         ArrayList<String> names = new ArrayList<>();
         try {
@@ -102,7 +122,12 @@ public class CounselorController {
         }
         return names;
     }
-        public boolean counselorExists(String name) {
+
+    /**
+     * Checks if a counselor already exists in the database by name.
+     * Used to prevent duplicate entries during insertion.
+     */
+    public boolean counselorExists(String name) {
         try {
             connection = DBConnection.getConnection();
             String query = "SELECT COUNT(*) FROM Counselors WHERE name = ?";
@@ -118,5 +143,4 @@ public class CounselorController {
         }
         return false;
     }
-
 }

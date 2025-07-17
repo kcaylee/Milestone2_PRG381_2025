@@ -10,12 +10,19 @@ import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.util.ArrayList;
 
+/**
+ * CounselorPanel provides a Swing-based GUI for managing counselors.
+ * It supports creating, reading, updating, and deleting counselor records.
+ */
 public class CounselorPanel extends JPanel {
 
     private JTable table;
     private DefaultTableModel tableModel;
     private final CounselorController controller = new CounselorController();
 
+    /**
+     * Constructs the CounselorPanel and initializes layout, table, and buttons.
+     */
     public CounselorPanel() {
         setLayout(new BorderLayout());
 
@@ -25,14 +32,18 @@ public class CounselorPanel extends JPanel {
 
         setupTable();
         setupButtons();
-
         loadCounselors();
     }
 
+    /**
+     * Initializes the JTable and scroll panel used for displaying counselor data.
+     */
     private void setupTable() {
         String[] columns = {"ID", "Name", "Specialization", "Availability"};
         tableModel = new DefaultTableModel(columns, 0) {
-            public boolean isCellEditable(int row, int col) { return false; }
+            public boolean isCellEditable(int row, int col) {
+                return false;
+            }
         };
 
         table = new JTable(tableModel);
@@ -44,6 +55,9 @@ public class CounselorPanel extends JPanel {
         add(scrollPane, BorderLayout.CENTER);
     }
 
+    /**
+     * Sets up and adds all buttons (Add, Edit, Delete, Refresh) to the panel.
+     */
     private void setupButtons() {
         JPanel buttonPanel = new JPanel(new FlowLayout());
 
@@ -65,36 +79,44 @@ public class CounselorPanel extends JPanel {
         add(buttonPanel, BorderLayout.SOUTH);
     }
 
+    /**
+     * Loads all counselors from the database into the table.
+     */
     private void loadCounselors() {
         tableModel.setRowCount(0);
         ArrayList<Counselor> list = controller.getAllCounselors();
 
         for (Counselor c : list) {
             tableModel.addRow(new Object[]{
-                    c.getId(), c.getName(), c.getSpecialization(), c.getAvailability()
+                c.getId(), c.getName(), c.getSpecialization(), c.getAvailability()
             });
         }
     }
 
+    /**
+     * Displays a dialog to enter counselor details and adds a new counselor to the database.
+     */
     private void addCounselor() {
-    String[] input = showInputDialog(null, null, null);
-    if (input == null) return;
+        String[] input = showInputDialog(null, null, null);
+        if (input == null) return;
 
-    if (controller.counselorExists(input[0])) {
-        DialogHelper.showError("A counselor with this name already exists.");
-        return;
+        if (controller.counselorExists(input[0])) {
+            DialogHelper.showError("A counselor with this name already exists.");
+            return;
+        }
+
+        boolean success = controller.addCounselor(input[0], input[1], input[2]);
+        if (success) {
+            DialogHelper.showInfo("Counselor added successfully.");
+            loadCounselors();
+        } else {
+            DialogHelper.showError("Failed to add counselor.");
+        }
     }
 
-    boolean success = controller.addCounselor(input[0], input[1], input[2]);
-    if (success) {
-        DialogHelper.showInfo("Counselor added successfully.");
-        loadCounselors();
-    } else {
-        DialogHelper.showError("Failed to add counselor.");
-    }
-}
-
-
+    /**
+     * Edits the currently selected counselor in the table.
+     */
     private void editCounselor() {
         int selected = table.getSelectedRow();
         if (selected == -1) {
@@ -119,6 +141,9 @@ public class CounselorPanel extends JPanel {
         }
     }
 
+    /**
+     * Deletes the selected counselor after user confirmation.
+     */
     private void deleteCounselor() {
         int selected = table.getSelectedRow();
         if (selected == -1) {
@@ -140,6 +165,9 @@ public class CounselorPanel extends JPanel {
         }
     }
 
+    /**
+     * Displays a dialog to collect counselor details for adding/editing.
+     */
     private String[] showInputDialog(String name, String specialization, String availability) {
         JTextField nameField = new JTextField(name != null ? name : "");
         JTextField specField = new JTextField(specialization != null ? specialization : "");
