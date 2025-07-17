@@ -4,6 +4,8 @@ import javax.swing.*;
 import java.awt.*;
 import view.components.SharedUI;
 
+import controller.FeedbackController;
+
 public class Dashboard extends JFrame {
 
     private JTabbedPane tabbedPane;
@@ -20,10 +22,15 @@ public class Dashboard extends JFrame {
     private void initComponents() {
         tabbedPane = new JTabbedPane();
 
+        //Instantiate feedbackPanel
+        FeedbackPanel feedbackPanel = new FeedbackPanel();
+        // Setup feedbackController
+        new FeedbackController(feedbackPanel); //needs this for some reason...
+        
         // Add panels to tabs
         tabbedPane.addTab("Appointments", new AppointmentPanel());
         tabbedPane.addTab("Counselors", new CounselorPanel());
-        tabbedPane.addTab("Feedback", new FeedbackPanel());
+        tabbedPane.addTab("Feedback", feedbackPanel);
 
         add(tabbedPane, BorderLayout.CENTER);
     }
