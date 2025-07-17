@@ -27,10 +27,20 @@ public class InputValidator {
         return rating >= 1 && rating <= 5;
     }
 
-    // Check if string is a valid rating number (used with text fields)
+    // Check if string is a valid rating number
     public static boolean isValidRating(String ratingStr) {
         if (!isInteger(ratingStr)) return false;
         int rating = Integer.parseInt(ratingStr);
         return isValidRating(rating);
+    }
+
+    // Check if string is a valid date in format YYYY-MM-DD
+    public static boolean isValidDate(String dateStr) {
+        return dateStr.matches("^\\d{4}-\\d{2}-\\d{2}$");
+    }
+
+    // Check if string is a valid time in format HH:MM
+    public static boolean isValidTime(String timeStr) {
+        return timeStr.matches("^(?:[01]\\d|2[0-3]):[0-5]\\d$");
     }
 }
